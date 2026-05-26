@@ -86,6 +86,91 @@ let messageTimer = 0;
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
+// Music tracks (place files in ./Audio/)
+const musicTracks = {
+  title: new Audio('./Audio/title.mp3'),
+  select: new Audio('./Audio/select.mp3'),
+  fight: new Audio('./Audio/fight.mp3'),
+  result: new Audio('./Audio/result.mp3'),
+};
+
+Object.values(musicTracks).forEach((a) => {
+  a.preload = 'auto';
+  a.loop = true;
+  a.volume = 0.7;
+});
+
+// Playback state
+let currentMusic = null;
+let userGesture = false;
+
+function setMusicTrack(name) {
+  if (!userGesture) return; // wait for user interaction
+  const track = musicTracks[name] || null;
+  if (currentMusic === track) return;
+  if (currentMusic) {
+    try {
+      currentMusic.pause();
+      currentMusic.currentTime = 0;
+    } catch (e) {}
+  }
+  currentMusic = track;
+  if (currentMusic) {
+    currentMusic.loop = true;
+    currentMusic.volume = 0.7;
+    currentMusic.play().catch(() => {
+      // play might fail due to autoplay rules; will try again on next user gesture
+    });
+  }
+}
+
+// --- SFX: punch / block / hit ---
+const sfx = {
+  punch: new Audio('./Audio/punch.wav'),
+  hit: new Audio('./Audio/hit.wav'),
+  block: new Audio('./Audio/block.wav'),
+};
+
+Object.values(sfx).forEach((a) => {
+  a.preload = 'auto';
+  a.volume = 0.9;
+});
+
+// playSFX supports overlapping sounds by creating a short-lived clone
+function playSFX(name) {
+  if (!userGesture) return; // only after user interaction
+  const base = sfx[name];
+  if (!base) return;
+  try {
+    // clone to allow overlapping playback
+    const inst = base.cloneNode(true);
+    inst.play().catch(() => {});
+  } catch (e) {
+    // fallback: try playing the base (may cut previous)
+    try { base.currentTime = 0; base.play().catch(()=>{}); } catch(_) {}
+  }
+}
+
+function updateMusicForScreen() {
+  switch (screen) {
+    case SCREENS.TITLE:
+      setMusicTrack('title');
+      break;
+    case SCREENS.SELECT:
+      setMusicTrack('select');
+      break;
+    case SCREENS.FIGHT:
+      setMusicTrack('fight');
+      break;
+    case SCREENS.RESULT:
+      setMusicTrack('result');
+      break;
+    default:
+      // stop music if unknown
+      setMusicTrack(null);
+  }
+}
+
 const backgroundFrames = [
   './Background/Background1.png',
   './Background/Background2.png',
@@ -1766,7 +1851,7 @@ function drawSelect() {
       lineGap: 1,
     });
   });
-
+ 
   drawBitmapTextFit(selectCursor === 0 ? 'P1 CHOOSE' : 'P2 CHOOSE', VIEW.WIDTH / 2, 150, 130, {
     scale: 0.9,
     align: 'center',
@@ -1914,6 +1999,9 @@ function gameLoop() {
   frame++;
   ctx.imageSmoothingEnabled = false;
 
+  // ensure music follows screen (no-op most frames)
+  updateMusicForScreen();
+
   switch (screen) {
     case SCREENS.TITLE:
       drawTitle();
@@ -1934,22 +2022,31 @@ function gameLoop() {
 }
 
 window.addEventListener('keydown', (e) => {
+  // mark that user interacted (required for audio playback)
+  if (!userGesture) {
+    userGesture = true;
+    updateMusicForScreen();
+  }
+
   keys[e.code] = true;
 
   if (e.code === 'Enter') {
     if (screen === SCREENS.TITLE) {
       screen = SCREENS.SELECT;
       selectCursor = 0;
+      updateMusicForScreen();
     } else if (screen === SCREENS.SELECT) {
       startFight();
       round = 1;
       p1Wins = 0;
       p2Wins = 0;
+      updateMusicForScreen();
     } else if (screen === SCREENS.RESULT) {
       screen = SCREENS.SELECT;
       round = 1;
       p1Wins = 0;
       p2Wins = 0;
+      updateMusicForScreen();
     }
   }
 
