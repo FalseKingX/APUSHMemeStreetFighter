@@ -1,4 +1,3 @@
-
 const VIEW = { WIDTH: 384, HEIGHT: 224, SCALE: 2 };
 const GROUND_Y = 180;
 const GRAVITY = 0.55;
@@ -173,6 +172,34 @@ washingtonKnockbackSheet.onload = () => {
   washingtonKnockbackReady = true;
 };
 washingtonKnockbackSheet.src = './GWSprites/Knockback.png';
+
+// LINCOLN SPRITE SHEET - Single combined sheet
+const lincolnSpriteSheet = new Image();
+let lincolnSpriteSource = lincolnSpriteSheet;
+let lincolnSpriteReady = false;
+lincolnSpriteSheet.onload = () => {
+  lincolnSpriteSource = buildTransparentSpriteSheet(lincolnSpriteSheet);
+  lincolnSpriteReady = true;
+};
+lincolnSpriteSheet.src = './ALSprites/SpriteSheet.png';
+
+const rooseveltSpriteSheet = new Image();
+let rooseveltSpriteSource = rooseveltSpriteSheet;
+let rooseveltSpriteReady = false;
+rooseveltSpriteSheet.onload = () => {
+  rooseveltSpriteSource = buildTransparentSpriteSheet(rooseveltSpriteSheet);
+  rooseveltSpriteReady = true;
+};
+rooseveltSpriteSheet.src = './TRSprites/SpriteSheet.png';
+
+const jeffersonSpriteSheet = new Image();
+let jeffersonSpriteSource = jeffersonSpriteSheet;
+let jeffersonSpriteReady = false;
+jeffersonSpriteSheet.onload = () => {
+  jeffersonSpriteSource = buildTransparentSpriteSheet(jeffersonSpriteSheet);
+  jeffersonSpriteReady = true;
+};
+jeffersonSpriteSheet.src = './TJSprites/SpriteSheet.png';
 
 const fontSheet = new Image();
 let fontSheetReady = false;
@@ -536,6 +563,310 @@ const WASHINGTON_KNOCKBACK = {
   frame: { sx: 327, sy: 135, sw: 668, sh: 794, footX: 333.5 },
 };
 
+const MAPPED_SPRITE_SOURCE_HEIGHT = 209;
+const MAPPED_SPRITE_DISPLAY_HEIGHT = 92;
+const MAPPED_SPRITE_FOOT_Y_OFFSET = 8;
+
+function mappedSpriteFrame(sx, sy, sw, sh, footX, footY = sh) {
+  return { sx, sy, sw, sh, footX, footY };
+}
+
+const LINCOLN_ANIMATIONS = {
+  idle: {
+    frames: [
+      mappedSpriteFrame(213, 27, 119, 194, 56),
+    ],
+    animSpeed: 12,
+  },
+
+  walk: {
+    frames: [
+      mappedSpriteFrame(388, 15, 102, 207, 56),
+      mappedSpriteFrame(536, 14, 110, 208, 56),
+      mappedSpriteFrame(687, 15, 117, 207, 56),
+      mappedSpriteFrame(853, 18, 108, 204, 56),
+      mappedSpriteFrame(1001, 20, 107, 202, 56),
+    ],
+    animSpeed: 7,
+  },
+
+  punch: {
+    frames: [
+      mappedSpriteFrame(382, 241, 155, 124, 56),
+      mappedSpriteFrame(565, 245, 180, 135, 56),
+      mappedSpriteFrame(753, 236, 173, 147, 56),
+      mappedSpriteFrame(951, 241, 264, 139, 56),
+    ],
+    animSpeed: 3,
+  },
+
+  kick: {
+    frames: [
+      mappedSpriteFrame(48, 392, 211, 184, 46),
+      mappedSpriteFrame(288, 394, 167, 181, 34),
+      mappedSpriteFrame(488, 404, 161, 172, 54),
+    ],
+    animSpeed: 4,
+  },
+
+  jump: {
+    frames: [
+      mappedSpriteFrame(701, 391, 126, 177, 62),
+      mappedSpriteFrame(881, 402, 109, 134, 58),
+      mappedSpriteFrame(1056, 402, 116, 165, 62),
+    ],
+    animSpeed: 5,
+  },
+
+  block: {
+    frames: [
+      mappedSpriteFrame(46, 597, 108, 174, 56),
+      mappedSpriteFrame(206, 599, 130, 172, 56),
+    ],
+    animSpeed: 10,
+  },
+
+  knockback: {
+    frames: [
+      mappedSpriteFrame(367, 811, 148, 156, 74),
+      mappedSpriteFrame(550, 810, 136, 142, 68),
+    ],
+    animSpeed: 8,
+  },
+
+  ko: {
+    frames: [
+      mappedSpriteFrame(730, 899, 274, 50, 137),
+      mappedSpriteFrame(774, 749, 214, 40, 107),
+    ],
+    animSpeed: 20,
+  },
+
+  special: {
+    frames: [
+      mappedSpriteFrame(41, 1023, 118, 188, 56),
+      mappedSpriteFrame(206, 1019, 169, 192, 56),
+      mappedSpriteFrame(380, 1025, 322, 186, 56),
+    ],
+    animSpeed: 5,
+  },
+
+  win: {
+    frames: [
+      mappedSpriteFrame(898, 973, 321, 251, 100),
+    ],
+    animSpeed: 30,
+  },
+};
+
+const ROOSEVELT_ANIMATIONS = {
+  idle: {
+    frames: [
+      mappedSpriteFrame(208, 26, 101, 174, 52),
+    ],
+    animSpeed: 12,
+  },
+
+  walk: {
+    frames: [
+      mappedSpriteFrame(433, 37, 108, 163, 54),
+      mappedSpriteFrame(587, 38, 112, 162, 56),
+      mappedSpriteFrame(741, 37, 105, 163, 54),
+      mappedSpriteFrame(890, 39, 102, 162, 52),
+      mappedSpriteFrame(1043, 42, 107, 160, 54),
+    ],
+    animSpeed: 7,
+  },
+
+  punch: {
+    frames: [
+      mappedSpriteFrame(375, 261, 154, 109, 56),
+      mappedSpriteFrame(565, 232, 185, 143, 56),
+      mappedSpriteFrame(762, 232, 176, 143, 56),
+      mappedSpriteFrame(975, 235, 234, 140, 56),
+    ],
+    animSpeed: 3,
+  },
+
+  kick: {
+    frames: [
+      mappedSpriteFrame(39, 399, 201, 183, 46),
+      mappedSpriteFrame(276, 408, 200, 175, 34),
+      mappedSpriteFrame(481, 413, 166, 170, 54),
+    ],
+    animSpeed: 4,
+  },
+
+  jump: {
+    frames: [
+      mappedSpriteFrame(694, 384, 118, 178, 60),
+      mappedSpriteFrame(880, 413, 113, 128, 58),
+      mappedSpriteFrame(1062, 418, 165, 154, 62),
+    ],
+    animSpeed: 5,
+  },
+
+  block: {
+    frames: [
+      mappedSpriteFrame(39, 613, 104, 164, 56),
+      mappedSpriteFrame(197, 615, 128, 162, 56),
+    ],
+    animSpeed: 10,
+  },
+
+  knockback: {
+    frames: [
+      mappedSpriteFrame(372, 822, 138, 145, 69),
+      mappedSpriteFrame(553, 817, 141, 138, 70),
+    ],
+    animSpeed: 8,
+  },
+
+  ko: {
+    frames: [
+      mappedSpriteFrame(736, 901, 249, 48, 125),
+      mappedSpriteFrame(758, 747, 206, 41, 103),
+    ],
+    animSpeed: 20,
+  },
+
+  special: {
+    frames: [
+      mappedSpriteFrame(29, 1027, 117, 177, 56),
+      mappedSpriteFrame(172, 1033, 202, 170, 56),
+      mappedSpriteFrame(352, 1033, 410, 170, 56),
+    ],
+    animSpeed: 5,
+  },
+
+  win: {
+    frames: [
+      mappedSpriteFrame(904, 960, 331, 245, 100),
+    ],
+    animSpeed: 30,
+  },
+};
+
+const JEFFERSON_ANIMATIONS = {
+  idle: {
+    frames: [
+      mappedSpriteFrame(224, 24, 107, 206, 54),
+    ],
+    animSpeed: 12,
+  },
+
+  walk: {
+    frames: [
+      mappedSpriteFrame(439, 28, 123, 202, 62),
+      mappedSpriteFrame(603, 32, 121, 198, 60),
+      mappedSpriteFrame(765, 32, 115, 198, 58),
+      mappedSpriteFrame(923, 32, 115, 198, 58),
+    ],
+    animSpeed: 7,
+  },
+
+  punch: {
+    frames: [
+      mappedSpriteFrame(383, 286, 153, 135, 56),
+      mappedSpriteFrame(602, 273, 175, 171, 56),
+      mappedSpriteFrame(790, 272, 177, 172, 69),
+      mappedSpriteFrame(999, 275, 207, 169, 74),
+    ],
+    animSpeed: 3,
+  },
+
+  kick: {
+    frames: [
+      mappedSpriteFrame(46, 492, 209, 193, 46),
+      mappedSpriteFrame(291, 497, 167, 185, 34),
+      mappedSpriteFrame(477, 508, 141, 177, 54),
+    ],
+    animSpeed: 4,
+  },
+
+  jump: {
+    frames: [
+      mappedSpriteFrame(651, 468, 125, 197, 62),
+      mappedSpriteFrame(829, 477, 117, 153, 58),
+      mappedSpriteFrame(998, 501, 112, 187, 62),
+    ],
+    animSpeed: 5,
+  },
+
+  block: {
+    frames: [
+      mappedSpriteFrame(43, 714, 102, 181, 56),
+      mappedSpriteFrame(185, 716, 137, 179, 56),
+    ],
+    animSpeed: 10,
+  },
+
+  knockback: {
+    frames: [
+      mappedSpriteFrame(373, 713, 132, 183, 66),
+      mappedSpriteFrame(540, 733, 147, 161, 74),
+    ],
+    animSpeed: 8,
+  },
+
+  ko: {
+    frames: [
+      mappedSpriteFrame(708, 820, 225, 55, 113),
+    ],
+    animSpeed: 20,
+  },
+
+  special: {
+    frames: [
+      mappedSpriteFrame(32, 976, 127, 197, 56),
+      mappedSpriteFrame(197, 981, 172, 192, 56),
+      mappedSpriteFrame(376, 982, 367, 191, 56),
+    ],
+    animSpeed: 5,
+  },
+
+  win: {
+    frames: [
+      mappedSpriteFrame(831, 902, 364, 284, 110),
+    ],
+    animSpeed: 30,
+  },
+};
+
+const MAPPED_CHARACTER_SPRITES = {
+  lincoln: {
+    get ready() {
+      return lincolnSpriteReady;
+    },
+    get source() {
+      return lincolnSpriteSource;
+    },
+    animations: LINCOLN_ANIMATIONS,
+  },
+  roosevelt: {
+    get ready() {
+      return rooseveltSpriteReady;
+    },
+    get source() {
+      return rooseveltSpriteSource;
+    },
+    animations: ROOSEVELT_ANIMATIONS,
+  },
+  jefferson: {
+    get ready() {
+      return jeffersonSpriteReady;
+    },
+    get source() {
+      return jeffersonSpriteSource;
+    },
+    animations: JEFFERSON_ANIMATIONS,
+  },
+};
+
+function getMappedCharacterSprite(presidentId) {
+  return MAPPED_CHARACTER_SPRITES[presidentId] || null;
+}
+
 function initCanvas() {
   canvas.width = VIEW.WIDTH;
   canvas.height = VIEW.HEIGHT;
@@ -568,6 +899,14 @@ class Fighter {
     this.nextWashingtonJumpVariant = 0;
     this.washingtonBlockVariant = 0;
     this.nextWashingtonBlockVariant = 0;
+    this.lincolnKickVariant = 0;
+    this.nextLincolnKickVariant = 0;
+    this.lincolnJumpVariant = 0;
+    this.nextLincolnJumpVariant = 0;
+    this.lincolnBlockVariant = 0;
+    this.nextLincolnBlockVariant = 0;
+    this.mappedBlockVariant = 0;
+    this.nextMappedBlockVariant = 0;
     this.hitbox = null;
     this.invincible = 0;
     this.combo = 0;
@@ -588,6 +927,8 @@ class Fighter {
     this.invincible = 60;
     this.onGround = true;
     this.animFrame = 0;
+    this.mappedBlockVariant = 0;
+    this.nextMappedBlockVariant = 0;
   }
 
   get hurtbox() {
@@ -631,7 +972,10 @@ class Fighter {
         this.y = GROUND_Y;
         this.vy = 0;
         this.onGround = true;
-        if (this.stateTimer <= 0) this.state = STATES.IDLE;
+        if (this.stateTimer <= 0) {
+          this.state = STATES.IDLE;
+          this.stateDuration = 0;
+        }
       } else {
         this.onGround = false;
       }
@@ -655,9 +999,15 @@ class Fighter {
     const blocking = input.block && this.onGround;
 
     if (blocking) {
-      if (this.state !== STATES.BLOCK && this.president.id === 'washington') {
-        this.washingtonBlockVariant = this.nextWashingtonBlockVariant;
-        this.nextWashingtonBlockVariant = (this.nextWashingtonBlockVariant + 1) % WASHINGTON_BLOCK.frames.length;
+      if (this.state !== STATES.BLOCK) {
+        const mappedSprite = getMappedCharacterSprite(this.president.id);
+        if (this.president.id === 'washington') {
+          this.washingtonBlockVariant = this.nextWashingtonBlockVariant;
+          this.nextWashingtonBlockVariant = (this.nextWashingtonBlockVariant + 1) % WASHINGTON_BLOCK.frames.length;
+        } else if (mappedSprite) {
+          this.mappedBlockVariant = this.nextMappedBlockVariant;
+          this.nextMappedBlockVariant = (this.nextMappedBlockVariant + 1) % mappedSprite.animations.block.frames.length;
+        }
       }
       this.state = STATES.BLOCK;
       this.vx *= 0.5;
@@ -669,6 +1019,9 @@ class Fighter {
       if (this.president.id === 'washington') {
         this.washingtonJumpVariant = this.nextWashingtonJumpVariant;
         this.nextWashingtonJumpVariant = (this.nextWashingtonJumpVariant + 1) % WASHINGTON_JUMP.frames.length;
+      } else if (this.president.id === 'lincoln') {
+        this.lincolnJumpVariant = this.nextLincolnJumpVariant;
+        this.nextLincolnJumpVariant = (this.nextLincolnJumpVariant + 1) % LINCOLN_ANIMATIONS.jump.frames.length;
       }
       this.vy = this.president.stats.jump;
       this.state = STATES.JUMP;
@@ -718,9 +1071,14 @@ class Fighter {
     this.hitbox = null;
     this.vx = 0;
 
-    if (type === STATES.KICK && this.president.id === 'washington') {
-      this.washingtonKickVariant = this.nextWashingtonKickVariant;
-      this.nextWashingtonKickVariant = (this.nextWashingtonKickVariant + 1) % WASHINGTON_KICK.frames.length;
+    if (type === STATES.KICK) {
+      if (this.president.id === 'washington') {
+        this.washingtonKickVariant = this.nextWashingtonKickVariant;
+        this.nextWashingtonKickVariant = (this.nextWashingtonKickVariant + 1) % WASHINGTON_KICK.frames.length;
+      } else if (this.president.id === 'lincoln') {
+        this.lincolnKickVariant = this.nextLincolnKickVariant;
+        this.nextLincolnKickVariant = (this.nextLincolnKickVariant + 1) % LINCOLN_ANIMATIONS.kick.frames.length;
+      }
     }
   }
 
@@ -757,10 +1115,12 @@ class Fighter {
     this.health = Math.max(0, this.health - damage);
     if (this.health <= 0) {
       this.state = STATES.KO;
+      this.stateDuration = 0;
       return;
     }
     this.state = STATES.HIT;
     this.stateTimer = blocked ? 8 : 16;
+    this.stateDuration = this.stateTimer;
     this.vx = knockback;
     this.vy = blocked ? -2 : -4;
     this.onGround = false;
@@ -859,6 +1219,51 @@ class Fighter {
     ctx.drawImage(washingtonKnockbackSource, f.sx, f.sy, f.sw, f.sh, Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh));
   }
 
+  drawMappedSprite(ctx, animType) {
+    const spriteConfig = getMappedCharacterSprite(this.president.id);
+    if (!spriteConfig || !spriteConfig.ready) return false;
+
+    const anim = spriteConfig.animations[animType];
+    if (!anim) return false;
+
+    let frameIndex = 0;
+    if (animType === 'idle' || animType === 'walk') {
+      frameIndex = Math.floor(this.animFrame / anim.animSpeed) % anim.frames.length;
+    } else if ([STATES.PUNCH, STATES.KICK].includes(this.state)) {
+      const duration = Math.max(1, this.stateDuration || 14);
+      const elapsed = Math.max(0, duration - this.stateTimer);
+      frameIndex = Math.min(anim.frames.length - 1, Math.floor((elapsed / duration) * anim.frames.length));
+    } else if (animType === 'jump') {
+      if (this.vy < -3) frameIndex = 0;
+      else if (this.vy < 2) frameIndex = 1;
+      else frameIndex = anim.frames.length - 1;
+      frameIndex = Math.min(frameIndex, anim.frames.length - 1);
+    } else if (animType === 'block') {
+      frameIndex = this.mappedBlockVariant % anim.frames.length;
+    } else if (animType === 'knockback') {
+      const duration = Math.max(1, this.stateDuration || 16);
+      const elapsed = Math.max(0, duration - this.stateTimer);
+      frameIndex = Math.min(anim.frames.length - 1, Math.floor((elapsed / duration) * anim.frames.length));
+    }
+
+    const frameData = anim.frames[frameIndex];
+    const { sx, sy, sw, sh, footX, footY } = frameData;
+    const scale = MAPPED_SPRITE_DISPLAY_HEIGHT / MAPPED_SPRITE_SOURCE_HEIGHT;
+    const dw = sw * scale;
+    const dh = sh * scale;
+    const dx = -footX * scale;
+    const dy = -footY * scale + MAPPED_SPRITE_FOOT_Y_OFFSET;
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(spriteConfig.source, sx, sy, sw, sh, Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh));
+    return true;
+  }
+
+  usesMappedSprite() {
+    const spriteConfig = getMappedCharacterSprite(this.president.id);
+    return Boolean(spriteConfig && spriteConfig.ready);
+  }
+
   usesWashingtonIdleSprite() {
     return (
       this.president.id === 'washington' &&
@@ -918,6 +1323,73 @@ class Fighter {
     ctx.ellipse(0, 2, 14, 4, 0, 0, Math.PI * 2);
     ctx.fill();
 
+    if (this.usesMappedSprite()) {
+      if (this.state === STATES.KO && this.drawMappedSprite(ctx, 'ko')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if (this.state === STATES.WIN && this.drawMappedSprite(ctx, 'win')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if (this.state === STATES.HIT && this.drawMappedSprite(ctx, 'knockback')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if (this.state === STATES.PUNCH && this.drawMappedSprite(ctx, 'punch')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if (this.state === STATES.KICK && this.drawMappedSprite(ctx, 'kick')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if (this.state === STATES.BLOCK && this.drawMappedSprite(ctx, 'block')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if ((this.state === STATES.JUMP || this.state === STATES.FALL) && this.drawMappedSprite(ctx, 'jump')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if (this.onGround && this.state === STATES.WALK && this.drawMappedSprite(ctx, 'walk')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+      if (this.onGround && this.state === STATES.IDLE && Math.abs(this.vx) < 0.5 && this.drawMappedSprite(ctx, 'idle')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
+    }
+
+    // WASHINGTON SPRITE CHECKS
     if (this.usesWashingtonKnockbackSprite()) {
       this.drawWashingtonKnockback(ctx);
       ctx.restore();
@@ -981,6 +1453,7 @@ class Fighter {
       return;
     }
 
+    // FALLBACK COLORED SPRITE DRAWING
     ctx.fillStyle = '#222';
     const legAnim = this.state === STATES.WALK ? Math.sin(this.animFrame * 0.5) * 4 : 0;
     ctx.fillRect(-8, -18 - crouch + bob, 6, 18 + legAnim);
@@ -1236,6 +1709,7 @@ function drawParticles() {
   particles = particles.filter((p) => {
     p.x += p.vx;
     p.y += p.vy;
+    p.vy += 0.2; // Slight gravity on particles
     p.life--;
     ctx.fillStyle = p.color;
     ctx.globalAlpha = p.life / 20;
