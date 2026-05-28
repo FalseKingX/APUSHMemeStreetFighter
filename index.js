@@ -2,6 +2,11 @@ const VIEW = { WIDTH: 384, HEIGHT: 224, SCALE: 2 };
 const GROUND_Y = 180;
 const GRAVITY = 0.55;
 const FRICTION = 0.82;
+const SPECIAL_METER_MAX = 100;
+const SPECIAL_METER_GAIN = {
+  punch: 26,
+  kick: 38,
+};
 
 const PRESIDENTS = [
   {
@@ -54,6 +59,7 @@ const STATES = {
   PUNCH: 'punch',
   KICK: 'kick',
   BLOCK: 'block',
+  SPECIAL: 'special',
   HIT: 'hit',
   KO: 'ko',
   WIN: 'win',
@@ -124,10 +130,11 @@ function setMusicTrack(name) {
   }
 }
 
-// --- SFX: punch / block / hit ---
+// --- SFX: punch / kick / jump / block ---
 const sfx = {
   punch: new Audio('./Audio/punch.wav'),
-  hit: new Audio('./Audio/hit.wav'),
+  kick: new Audio('./Audio/kick.wav'),
+  jump: new Audio('./Audio/jump.wav'),
   block: new Audio('./Audio/block.wav'),
 };
 
@@ -257,6 +264,15 @@ washingtonKnockbackSheet.onload = () => {
   washingtonKnockbackReady = true;
 };
 washingtonKnockbackSheet.src = './GWSprites/Knockback.png';
+
+const washingtonSpecialSheet = new Image();
+let washingtonSpecialSource = washingtonSpecialSheet;
+let washingtonSpecialReady = false;
+washingtonSpecialSheet.onload = () => {
+  washingtonSpecialSource = buildTransparentSpriteSheet(washingtonSpecialSheet);
+  washingtonSpecialReady = true;
+};
+washingtonSpecialSheet.src = './GWSprites/SpecialMove.png';
 
 // LINCOLN SPRITE SHEET - Single combined sheet
 const lincolnSpriteSheet = new Image();
@@ -648,6 +664,16 @@ const WASHINGTON_KNOCKBACK = {
   frame: { sx: 327, sy: 135, sw: 668, sh: 794, footX: 333.5 },
 };
 
+const WASHINGTON_SPECIAL = {
+  displayHeight: 92,
+  footYOffset: 8,
+  frames: [
+    { sx: 37, sy: 1007, sw: 124, sh: 189, footX: 56 },
+    { sx: 210, sy: 1010, sw: 168, sh: 186, footX: 56 },
+    { sx: 386, sy: 1018, sw: 294, sh: 178, footX: 56 },
+  ],
+};
+
 const MAPPED_SPRITE_SOURCE_HEIGHT = 209;
 const MAPPED_SPRITE_DISPLAY_HEIGHT = 92;
 const MAPPED_SPRITE_FOOT_Y_OFFSET = 8;
@@ -974,6 +1000,8 @@ class Fighter {
     this.height = 52;
     this.health = 100;
     this.maxHealth = 100;
+    this.specialMeter = 0;
+    this.maxSpecialMeter = SPECIAL_METER_MAX;
     this.state = STATES.IDLE;
     this.stateTimer = 0;
     this.stateDuration = 0;
@@ -1005,6 +1033,7 @@ class Fighter {
     this.vy = 0;
     this.facing = facing;
     this.health = 100;
+    this.specialMeter = 0;
     this.state = STATES.IDLE;
     this.stateTimer = 0;
     this.stateDuration = 0;
@@ -1026,17 +1055,19 @@ class Fighter {
   }
 
   attackBox(type) {
-    const reach = type === 'kick' ? 38 : 28;
-    const h = type === 'kick' ? 18 : 14;
-    const yOff = type === 'kick' ? 28 : 38;
+    const reach = type === STATES.SPECIAL ? 54 : type === STATES.KICK ? 38 : 28;
+    const h = type === STATES.SPECIAL ? 24 : type === STATES.KICK ? 18 : 14;
+    const yOff = type === STATES.SPECIAL ? 34 : type === STATES.KICK ? 28 : 38;
     const left = this.facing === 1 ? this.x + this.width / 2 + 4 : this.x - this.width / 2 - 4 - reach;
+    const damage = type === STATES.SPECIAL ? 18 : type === STATES.KICK ? 12 : 8;
+    const knockback = type === STATES.SPECIAL ? 7 : type === STATES.KICK ? 5 : 3;
     return {
       x: left,
       y: this.y - yOff,
       w: reach,
       h,
-      damage: type === 'kick' ? 12 * this.president.stats.power : 8 * this.president.stats.power,
-      knockback: type === 'kick' ? 5 : 3,
+      damage: damage * this.president.stats.power,
+      knockback,
       type,
     };
   }
@@ -1068,12 +1099,12 @@ class Fighter {
       return;
     }
 
-    if ([STATES.PUNCH, STATES.KICK].includes(this.state)) {
+    if ([STATES.PUNCH, STATES.KICK, STATES.SPECIAL].includes(this.state)) {
       if (this.stateTimer <= 0) {
         this.state = STATES.IDLE;
         this.stateDuration = 0;
         this.hitbox = null;
-      } else if (this.stateTimer > 8 && !this.hitbox) {
+      } else if (this.stateTimer > (this.state === STATES.SPECIAL ? 12 : 8) && !this.hitbox) {
         this.hitbox = this.attackBox(this.state);
       }
       if (this.hitbox) this.checkHit(opponent);
@@ -1093,6 +1124,7 @@ class Fighter {
           this.mappedBlockVariant = this.nextMappedBlockVariant;
           this.nextMappedBlockVariant = (this.nextMappedBlockVariant + 1) % mappedSprite.animations.block.frames.length;
         }
+        playSFX('block');
       }
       this.state = STATES.BLOCK;
       this.vx *= 0.5;
@@ -1100,6 +1132,8 @@ class Fighter {
       this.startAttack(STATES.PUNCH, 14);
     } else if (input.kick && this.canAttack()) {
       this.startAttack(STATES.KICK, 20);
+    } else if (input.special && this.canSpecialAttack()) {
+      this.startAttack(STATES.SPECIAL, 28);
     } else if (input.jump && this.onGround) {
       if (this.president.id === 'washington') {
         this.washingtonJumpVariant = this.nextWashingtonJumpVariant;
@@ -1108,6 +1142,7 @@ class Fighter {
         this.lincolnJumpVariant = this.nextLincolnJumpVariant;
         this.nextLincolnJumpVariant = (this.nextLincolnJumpVariant + 1) % LINCOLN_ANIMATIONS.jump.frames.length;
       }
+      playSFX('jump');
       this.vy = this.president.stats.jump;
       this.state = STATES.JUMP;
       this.onGround = false;
@@ -1149,12 +1184,27 @@ class Fighter {
     return this.onGround && [STATES.IDLE, STATES.WALK, STATES.BLOCK].includes(this.state);
   }
 
+  canSpecialAttack() {
+    const hasSpecialAnimation =
+      (this.president.id === 'washington' && washingtonSpecialReady) ||
+      Boolean(getMappedCharacterSprite(this.president.id)?.animations.special);
+    return this.canAttack() && hasSpecialAnimation && this.specialMeter >= this.maxSpecialMeter;
+  }
+
+  addSpecialMeter(amount) {
+    this.specialMeter = Math.min(this.maxSpecialMeter, this.specialMeter + amount);
+  }
+
   startAttack(type, duration) {
     this.state = type;
     this.stateTimer = duration;
     this.stateDuration = duration;
     this.hitbox = null;
     this.vx = 0;
+    playSFX(type === STATES.KICK || type === STATES.SPECIAL ? 'kick' : 'punch');
+    if (type === STATES.SPECIAL) {
+      this.specialMeter = 0;
+    }
 
     if (type === STATES.KICK) {
       if (this.president.id === 'washington') {
@@ -1168,7 +1218,7 @@ class Fighter {
   }
 
   faceOpponent(opponent) {
-    if ([STATES.PUNCH, STATES.KICK, STATES.HIT].includes(this.state)) return;
+    if ([STATES.PUNCH, STATES.KICK, STATES.SPECIAL, STATES.HIT].includes(this.state)) return;
     if (opponent.x > this.x) this.facing = 1;
     else if (opponent.x < this.x) this.facing = -1;
   }
@@ -1187,6 +1237,10 @@ class Fighter {
       const blocked = opponent.state === STATES.BLOCK;
       const damage = blocked ? hb.damage * 0.15 : hb.damage;
       opponent.takeHit(damage, this.facing * hb.knockback, blocked);
+      playSFX(blocked ? 'block' : hb.type === STATES.KICK || hb.type === STATES.SPECIAL ? 'kick' : 'punch');
+      if (!blocked && hb.type !== STATES.SPECIAL) {
+        this.addSpecialMeter(SPECIAL_METER_GAIN[hb.type] || 0);
+      }
       this.hitbox = null;
       if (!blocked) {
         spawnHitParticles(opponent.x, opponent.y - opponent.height / 2);
@@ -1304,6 +1358,22 @@ class Fighter {
     ctx.drawImage(washingtonKnockbackSource, f.sx, f.sy, f.sw, f.sh, Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh));
   }
 
+  drawWashingtonSpecial(ctx) {
+    const { frames, displayHeight, footYOffset } = WASHINGTON_SPECIAL;
+    const duration = Math.max(1, this.stateDuration || 28);
+    const elapsed = Math.max(0, duration - this.stateTimer);
+    const frameIndex = Math.min(frames.length - 1, Math.floor((elapsed / duration) * frames.length));
+    const f = frames[frameIndex];
+    const scale = displayHeight / f.sh;
+    const dw = f.sw * scale;
+    const dh = displayHeight;
+    const dx = -f.footX * scale;
+    const dy = -dh + footYOffset;
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(washingtonSpecialSource, f.sx, f.sy, f.sw, f.sh, Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh));
+  }
+
   drawMappedSprite(ctx, animType) {
     const spriteConfig = getMappedCharacterSprite(this.president.id);
     if (!spriteConfig || !spriteConfig.ready) return false;
@@ -1314,7 +1384,7 @@ class Fighter {
     let frameIndex = 0;
     if (animType === 'idle' || animType === 'walk') {
       frameIndex = Math.floor(this.animFrame / anim.animSpeed) % anim.frames.length;
-    } else if ([STATES.PUNCH, STATES.KICK].includes(this.state)) {
+    } else if ([STATES.PUNCH, STATES.KICK, STATES.SPECIAL].includes(this.state)) {
       const duration = Math.max(1, this.stateDuration || 14);
       const elapsed = Math.max(0, duration - this.stateTimer);
       frameIndex = Math.min(anim.frames.length - 1, Math.floor((elapsed / duration) * anim.frames.length));
@@ -1387,6 +1457,10 @@ class Fighter {
     return this.president.id === 'washington' && washingtonKnockbackReady && this.state === STATES.HIT;
   }
 
+  usesWashingtonSpecialSprite() {
+    return this.president.id === 'washington' && washingtonSpecialReady && this.state === STATES.SPECIAL;
+  }
+
   draw(ctx, showNameTag = true) {
     const p = this.president;
     const x = Math.round(this.x);
@@ -1444,6 +1518,13 @@ class Fighter {
         }
         return;
       }
+      if (this.state === STATES.SPECIAL && this.drawMappedSprite(ctx, 'special')) {
+        ctx.restore();
+        if (showNameTag) {
+          drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+        }
+        return;
+      }
       if (this.state === STATES.BLOCK && this.drawMappedSprite(ctx, 'block')) {
         ctx.restore();
         if (showNameTag) {
@@ -1475,6 +1556,15 @@ class Fighter {
     }
 
     // WASHINGTON SPRITE CHECKS
+    if (this.usesWashingtonSpecialSprite()) {
+      this.drawWashingtonSpecial(ctx);
+      ctx.restore();
+      if (showNameTag) {
+        drawBitmapTextFit(p.name, x, y - this.height - 16, 88, { scale: 0.85, align: 'center' });
+      }
+      return;
+    }
+
     if (this.usesWashingtonKnockbackSprite()) {
       this.drawWashingtonKnockback(ctx);
       ctx.restore();
@@ -1627,6 +1717,7 @@ function getInput(playerNum) {
       jump: keys['KeyW'],
       punch: keys['KeyF'],
       kick: keys['KeyG'],
+      special: keys['KeyH'],
       block: keys['KeyS'],
     };
   }
@@ -1636,6 +1727,7 @@ function getInput(playerNum) {
     jump: keys['ArrowUp'],
     punch: keys['KeyK'],
     kick: keys['KeyL'],
+    special: keys['Semicolon'],
     block: keys['ArrowDown'],
   };
 }
@@ -1759,6 +1851,7 @@ function drawHUD() {
   const [p1, p2] = fighters;
   const barW = 140;
   const pad = 12;
+  const meterH = 5;
 
   ctx.fillStyle = '#333';
   ctx.fillRect(pad, 10, barW, 12);
@@ -1768,6 +1861,7 @@ function drawHUD() {
   ctx.strokeStyle = '#c9a227';
   ctx.lineWidth = 2;
   ctx.strokeRect(pad, 10, barW, 12);
+  drawSpecialMeter(p1, pad, 24, barW, meterH, false);
   drawBitmapTextFit(p1.president.name, pad, 4, barW - 20, { scale: 0.85, align: 'left' });
 
   const x2 = VIEW.WIDTH - pad - barW;
@@ -1778,6 +1872,7 @@ function drawHUD() {
   ctx.fillRect(x2 + barW - hp2, 10, hp2, 12);
   ctx.strokeStyle = '#c9a227';
   ctx.strokeRect(x2, 10, barW, 12);
+  drawSpecialMeter(p2, x2, 24, barW, meterH, true);
   drawBitmapTextFit(p2.president.name, VIEW.WIDTH - pad, 4, barW - 20, { scale: 0.85, align: 'right' });
 
   drawPhrase('KO_RED', VIEW.WIDTH / 2, 2, { scale: 0.85, align: 'center' });
@@ -1786,8 +1881,23 @@ function drawHUD() {
     align: 'center',
   });
 
-  drawBitmapText('*'.repeat(p1Wins) || '-', pad, 28, { scale: 0.9, align: 'left' });
-  drawBitmapText('*'.repeat(p2Wins) || '-', VIEW.WIDTH - pad, 28, { scale: 0.9, align: 'right' });
+  drawBitmapText('*'.repeat(p1Wins) || '-', pad, 31, { scale: 0.9, align: 'left' });
+  drawBitmapText('*'.repeat(p2Wins) || '-', VIEW.WIDTH - pad, 31, { scale: 0.9, align: 'right' });
+}
+
+function drawSpecialMeter(fighter, x, y, w, h, mirrored = false) {
+  const fillW = Math.round((fighter.specialMeter / fighter.maxSpecialMeter) * w);
+  ctx.fillStyle = '#10233f';
+  ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = fighter.specialMeter >= fighter.maxSpecialMeter ? '#63d8ff' : '#1f7cff';
+  if (mirrored) {
+    ctx.fillRect(x + w - fillW, y, fillW, h);
+  } else {
+    ctx.fillRect(x, y, fillW, h);
+  }
+  ctx.strokeStyle = '#80c8ff';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, w, h);
 }
 
 function drawParticles() {
